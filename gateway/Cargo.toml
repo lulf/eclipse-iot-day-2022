@@ -1,0 +1,23 @@
+[package]
+name = "ble-gateway"
+version = "0.1.0"
+authors = ["Ulf Lilleengen <ulf.lilleengen@gmail.com>"]
+edition = "2018"
+description = "BLE GATT gateway"
+
+[dependencies]
+
+uuid = { version = "0.8", features = ["v4"] }
+clap = { version = "3.0", features = ["derive"] }
+reqwest = { version = "0.11", features = ["json"] }
+bluer = "0.13"
+tokio = { version = "1", features = ["full"] }
+log = "0.4.11"
+chrono = "0.4"
+bytes = "1.1"
+serde_json = "1.0"
+serde = "1.0.136"
+stderrlog = "0.4"
+futures = "0.3"
+anyhow = "1.0"
+humantime = "2"
