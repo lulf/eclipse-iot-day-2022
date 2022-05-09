@@ -4,15 +4,16 @@
 #![feature(generic_associated_types)]
 #![feature(type_alias_impl_trait)]
 
-use drogue_device::bsp::boards::nrf52::microbit::Microbit;
 use drogue_device::drivers::ble::gatt::{
     device_info::{DeviceInformationService, DeviceInformationServiceEvent},
     dfu::{FirmwareService, FirmwareServiceEvent},
-    temperature::{TemperatureService, TemperatureServiceEvent},
+    environment::*,
 };
 use drogue_device::drivers::ble::gatt::{dfu::FirmwareGattService, enable_softdevice};
 use drogue_device::firmware::FirmwareManager;
+use drogue_device::traits::led::ToFrame;
 use drogue_device::Board;
+use drogue_device::{bsp::boards::nrf52::microbit::Microbit, domain::led::matrix::Brightness};
 use embassy::blocking_mutex::raw::ThreadModeRawMutex;
 use embassy::channel::{Channel, DynamicReceiver, DynamicSender};
 use embassy::executor::Spawner;
@@ -27,7 +28,8 @@ use embassy_nrf::Peripherals;
 use futures::StreamExt;
 use heapless::Vec;
 use nrf_softdevice::ble::gatt_server;
-use nrf_softdevice::{raw, ble::Connection, temperature_celsius, Flash, Softdevice};
+use nrf_softdevice::ble::peripheral;
+use nrf_softdevice::{ble::Connection, raw, temperature_celsius, Flash, Softdevice};
 
 #[cfg(feature = "panic-probe")]
 use panic_probe as _;
@@ -71,6 +73,24 @@ async fn main(s: Spawner, p: Peripherals) {
         .device_info
         .initialize(b"Eclipse IoT Day", b"1", b"BBC", b"1")
         .unwrap();
+    server
+        .env
+        .descriptor_set(
+            MeasurementDescriptor {
+                flags: 0,
+                sampling_fn: SamplingFunction::ArithmeticMean,
+                measurement_period: Period::Unknown,
+                update_interval: Interval::Value(1),
+                application: MeasurementApp::Air,
+                uncertainty: Uncertainty::Unknown,
+            }
+            .to_vec(),
+        )
+        .unwrap();
+    server
+        .env
+        .trigger_set(TriggerSetting::FixedInterval(1).to_vec())
+        .unwrap();
 
     // Fiwmare update service event channel and task
     static EVENTS: Channel<ThreadModeRawMutex, FirmwareServiceEvent, 10> = Channel::new();
@@ -93,16 +113,19 @@ async fn main(s: Spawner, p: Peripherals) {
 
     // Finally, a blinker application.
     let mut display = board.display;
+    display.set_brightness(Brightness::MAX);
     loop {
-        let _ = display.scroll(version).await;
-        Timer::after(Duration::from_secs(5)).await;
+        let _ = display
+            .display('A'.to_frame(), Duration::from_secs(1))
+            .await;
+        Timer::after(Duration::from_secs(1)).await;
     }
 }
 
 #[nrf_softdevice::gatt_server]
 pub struct GattServer {
     pub firmware: FirmwareService,
-    pub temperature: TemperatureService,
+    pub env: EnvironmentSensingService,
     pub device_info: DeviceInformationService,
 }
 
@@ -128,18 +151,18 @@ pub async fn gatt_server_task(
 ) {
     let mut notify = false;
     let mut ticker = Ticker::every(Duration::from_secs(1));
-    let temp_service = &server.temperature;
+    let env_service = &server.env;
     loop {
         let mut interval = None;
         let next = ticker.next();
         match select(
             gatt_server::run(&conn, server, |e| match e {
-                GattServerEvent::Temperature(e) => match e {
-                    TemperatureServiceEvent::TemperatureCccdWrite { notifications } => {
+                GattServerEvent::Env(e) => match e {
+                    EnvironmentSensingServiceEvent::TemperatureCccdWrite { notifications } => {
                         notify = notifications;
                     }
-                    TemperatureServiceEvent::PeriodWrite(period) => {
-                        interval.replace(Duration::from_millis(period as u64));
+                    EnvironmentSensingServiceEvent::PeriodWrite(period) => {
+                        interval.replace(Duration::from_secs(period as u64));
                     }
                 },
                 GattServerEvent::Firmware(e) => {
@@ -160,10 +183,11 @@ pub async fn gatt_server_task(
             Either::Second(_) => {
                 let value: i8 = temperature_celsius(sd).unwrap().to_num();
                 defmt::info!("Measured temperature: {}℃", value);
+                let value = value as i16;
 
-                temp_service.temperature_set(value).unwrap();
+                env_service.temperature_set(value).unwrap();
                 if notify {
-                    temp_service.temperature_notify(&conn, value).unwrap();
+                    env_service.temperature_notify(&conn, value).unwrap();
                 }
             }
         }
@@ -182,22 +206,19 @@ pub async fn advertiser_task(
     events: DynamicSender<'static, FirmwareServiceEvent>,
     name: &'static str,
 ) {
-    use heapless::Vec;
-    use nrf_softdevice::ble::{gatt_server, peripheral};
-
     let mut adv_data: Vec<u8, 31> = Vec::new();
     #[rustfmt::skip]
-        adv_data.extend_from_slice(&[
-            0x02, 0x01, raw::BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE as u8,
-            0x03, 0x03, 0x00, 0x61,
-            (1 + name.len() as u8), 0x09]).unwrap();
+    adv_data.extend_from_slice(&[
+        0x02, 0x01, raw::BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE as u8,
+        0x03, 0x03, 0x1A, 0x18,
+        (1 + name.len() as u8), 0x09]).unwrap();
 
     adv_data.extend_from_slice(name.as_bytes()).ok().unwrap();
 
     #[rustfmt::skip]
-        let scan_data = &[
-            0x03, 0x03, 0xA, 0x18,
-        ];
+    let scan_data = &[
+        0x03, 0x03, 0x0A, 0x18,
+    ];
 
     loop {
         let config = peripheral::Config::default();
@@ -212,7 +233,7 @@ pub async fn advertiser_task(
 
         defmt::debug!("connection established");
         if let Err(e) = spawner.spawn(gatt_server_task(sd, conn, server, events.clone())) {
-            defmt::warn!("Error spawning gatt task");
+            defmt::warn!("Error spawning gatt task: {:?}", e);
         }
     }
 }
