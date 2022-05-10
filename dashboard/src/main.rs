@@ -91,44 +91,51 @@ impl Component for App {
         }];
 
         html! {
-            <>
-            <OAuth2
-                config={
-                    Config {
-                        client_id: "drogue".into(),
-                        auth_url: "https://sso.sandbox.drogue.cloud/auth/realms/drogue/protocol/openid-connect/auth".into(),
-                        token_url: "https://sso.sandbox.drogue.cloud/auth/realms/drogue/protocol/openid-connect/token".into(),
-                    }
-                }
-                >
-                <Failure><FailureMessage/></Failure>
-                <Authenticated>
-                    <BackdropViewer/>
-                    <ToastViewer/>
+              <>
+                      <BackdropViewer/>
+                      <ToastViewer/>
 
-                    <Router<AppRoute, ()>
-                        //redirect = {Router::redirect(|_|AppRoute::Dashboard)}
-                        render = {Self::switch_main(tools)}
-                    />
-                </Authenticated>
-                <NotAuthenticated>
-                    <BackdropViewer/>
-                    <ToastViewer/>
-                    <Page logo={logo} tools={Children::new(unauth_tools)}>
-                        <Router<AppRoute>
-                            render = { Router::render(move |switch: AppRoute| { match switch {
-                                    AppRoute::Dashboard => html!(
-                                        <p>{"You need to log in!"}</p>
-                                    ),
-                                    _ => html!(<LocationRedirect logout_href="/" />),
-                            }})}
-                        />
-                    </Page>
-                </NotAuthenticated>
-            </OAuth2>
+                      <Router<AppRoute, ()>
+                          //redirect = {Router::redirect(|_|AppRoute::Dashboard)}
+                          render = {Self::switch_main(tools)}
+                      />
+        //      <OAuth2
+        //          config={
+        //              Config {
+        //                  client_id: "drogue".into(),
+        //                  auth_url: "https://sso.sandbox.drogue.cloud/auth/realms/drogue/protocol/openid-connect/auth".into(),
+        //                  token_url: "https://sso.sandbox.drogue.cloud/auth/realms/drogue/protocol/openid-connect/token".into(),
+        //              }
+        //          }
+        //          >
+        //          <Failure><FailureMessage/></Failure>
+        //          <Authenticated>
+        //              <BackdropViewer/>
+        //              <ToastViewer/>
 
-            </>
-        }
+        //              <Router<AppRoute, ()>
+        //                  //redirect = {Router::redirect(|_|AppRoute::Dashboard)}
+        //                  render = {Self::switch_main(tools)}
+        //              />
+        //          </Authenticated>
+        //          <NotAuthenticated>
+        //              <BackdropViewer/>
+        //              <ToastViewer/>
+        //              <Page logo={logo} tools={Children::new(unauth_tools)}>
+        //                  <Router<AppRoute>
+        //                      render = { Router::render(move |switch: AppRoute| { match switch {
+        //                              AppRoute::Dashboard => html!(
+        //                                  <p>{"You need to log in!"}</p>
+        //                              ),
+        //                              _ => html!(<LocationRedirect logout_href="/" />),
+        //                      }})}
+        //                  />
+        //              </Page>
+        //          </NotAuthenticated>
+        //      </OAuth2>
+
+              </>
+          }
     }
 }
 

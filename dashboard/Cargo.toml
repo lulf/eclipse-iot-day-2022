@@ -11,6 +11,9 @@ patternfly-yew = "0.2"
 wasm-bindgen = "0.2"
 wasm-logger = "0.2"
 log = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+drogue-client = { git = "https://github.com/drogue-iot/drogue-client", rev = "3ae242cbc3d334becb30b4a256bfe5aca460df8f", default-features = false, features = ["wasm"] }
 
 [patch.crates-io]
 patternfly-yew = { git = "https://github.com/ctron/patternfly-yew", rev = "ad0b2730402c004cd6e10ec6c52a2a0da2e13310" }
