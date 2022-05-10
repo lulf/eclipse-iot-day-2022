@@ -1,0 +1,24 @@
+DEMO 1
+Before:
+* Flash firmware
+* Start gateway
+* Start drgdfu
+
+During:
+* Show console output
+* Show hawkbit console
+* Upload B firmware to hawkbit
+
+DEMO 2
+Before:
+* Flash firmware
+* Start gateway
+* Start drgdfu
+
+During:
+* Show console output
+* Modify source
+* Push to git
+* Show hawkbit console
+* Upload B firmware to hawkbit
+
