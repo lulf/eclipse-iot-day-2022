@@ -116,7 +116,7 @@ async fn main(s: Spawner, p: Peripherals) {
     display.set_brightness(Brightness::MAX);
     loop {
         let _ = display
-            .display('A'.to_frame(), Duration::from_secs(1))
+            .display('E'.to_frame(), Duration::from_secs(1))
             .await;
         Timer::after(Duration::from_secs(1)).await;
     }
