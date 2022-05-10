@@ -1,3 +1,4 @@
+use crate::fetcher::DeviceFetcher;
 use drogue_client::{
     core::v1::{ConditionStatus, Conditions},
     dialect,
@@ -8,9 +9,11 @@ use drogue_client::{
 use patternfly_yew::*;
 use serde::{Deserialize, Serialize};
 use yew::prelude::*;
+use yew_agent::{Bridge, Bridged};
 
 pub struct Firmware {
     devices: Vec<Device>,
+    _fetcher: Box<dyn Bridge<DeviceFetcher>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
@@ -52,7 +55,7 @@ pub struct FirmwareStatus {
 pub struct DeviceModel {
     name: String,
     update_type: String,
-    state: String,
+    conditions: Conditions,
     current: String,
     target: String,
 }
@@ -71,19 +74,42 @@ impl From<&Device> for DeviceModel {
                 } => "OCI".to_string(),
                 FirmwareSpec::HAWKBIT { controller: _ } => "Hawkbit".to_string(),
             },
-            state: "Unknown".to_string(),
+            conditions: status.conditions.clone(),
             current: status.current.clone(),
             target: status.target.clone(),
         }
     }
 }
 
+impl DeviceModel {
+    fn get_label_state(&self) -> (String, Color) {
+        let mut in_sync = false;
+        let mut progress = None;
+        for condition in self.conditions.0.iter() {
+            if condition.r#type == "InSync" && condition.status == "True" {
+                in_sync = true;
+            } else if condition.r#type == "UpdateProgress" {
+                progress = condition.message.clone();
+            }
+        }
+        match (in_sync, progress) {
+            (true, _) => ("Synced".to_string(), Color::Green),
+            (false, Some(p)) => (format!("Updating ({})", p), Color::Orange),
+            (false, _) => ("Unknown".to_string(), Color::Red),
+        }
+    }
+}
+
 impl TableRenderer for DeviceModel {
     fn render(&self, column: ColumnIndex) -> Html {
+        let outline = false;
+        let (label, color) = self.get_label_state();
         match column.index {
             0 => html! {{&self.name}},
             1 => html! {{&self.update_type}},
-            2 => html! {{&self.state}},
+            2 => {
+                html! {<Label outline={outline} label={format!("{}", &label)} color={color} />}
+            }
             3 => html! {{&self.current}},
             4 => html! {{&self.target}},
             _ => html! {},
@@ -100,20 +126,21 @@ impl TableRenderer for DeviceModel {
 }
 
 pub enum FirmwareMessage {
-    DevicesUpdate(Vec<Device>),
+    DevicesUpdated(Vec<Device>),
 }
 impl Component for Firmware {
     type Message = FirmwareMessage;
     type Properties = ();
-    fn create(_: &Context<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
         Self {
             devices: Vec::new(),
+            _fetcher: DeviceFetcher::bridge(ctx.link().callback(FirmwareMessage::DevicesUpdated)),
         }
     }
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            FirmwareMessage::DevicesUpdate(devices) => {
+            FirmwareMessage::DevicesUpdated(devices) => {
                 self.devices = devices;
                 true
             }

@@ -8,6 +8,7 @@ use yew_router::prelude::*;
 use yew_router::router::Render;
 
 mod dashboard;
+mod fetcher;
 mod firmware;
 
 use dashboard::Dashboard;
