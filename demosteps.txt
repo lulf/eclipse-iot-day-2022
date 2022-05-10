@@ -1,24 +1,34 @@
 DEMO 1
 Before:
-* Flash firmware
+* Flash firmware with 'A'
 * Start gateway
 * Start drgdfu
 
 During:
-* Show console output
-* Show hawkbit console
-* Upload B firmware to hawkbit
+* Display:
+  * Camera on microbit showing blinking A
+  * Graph showing temperature telemetry data
+  * Drogue Ajour console
+  * Hawkbit console
+* Actions:
+    * Show microbit
+    * Show console with 'gateway' and drgdfu
+    * Show data graph
+    * Show ajour console
+    * Show hawkbit console
+    * Trigger deployment of 'B'
+    * Show progress update in Drogue Ajour
 
 DEMO 2
 Before:
-* Flash firmware
-* Start gateway
-* Start drgdfu
-
-During:
-* Show console output
-* Modify source
-* Push to git
-* Show hawkbit console
-* Upload B firmware to hawkbit
-
+* Display:
+  * Camera on microbit showing blinking A
+  * Graph showing temperature telemetry data
+  * Drogue Ajour console
+* Actions:
+    * Show microbit
+    * Show ajour console
+    * Trigger pipeline run
+    * Edit microbit to use container image
+    * Show progress update in openshift console
+    * Show progress status in ajour console

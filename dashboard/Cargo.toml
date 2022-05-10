@@ -1,0 +1,17 @@
+[package]
+name = "eclipse-iot-dashboard"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+yew = "0.19"
+yew-router = { version = "0.16.1", package = "yew-router-nested" }
+yew-oauth2 = { version = "0.2.0", features = ["router"] }
+patternfly-yew = "0.2"
+wasm-bindgen = "0.2"
+wasm-logger = "0.2"
+log = "0.4"
+
+[patch.crates-io]
+patternfly-yew = { git = "https://github.com/ctron/patternfly-yew", rev = "ad0b2730402c004cd6e10ec6c52a2a0da2e13310" }
+#yew-oauth2 = { git = "https://github.com/ctron/yew-oauth2.git", rev = "0045e462ef11890365b458d85bbe0574d054b4fc"}
