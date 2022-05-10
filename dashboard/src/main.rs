@@ -7,13 +7,8 @@ use yew_oauth2::prelude::*;
 use yew_router::prelude::*;
 use yew_router::router::Render;
 
-mod account;
-mod billing;
 mod dashboard;
-mod devices;
 mod firmware;
-mod login;
-mod usage;
 
 use dashboard::Dashboard;
 use firmware::Firmware;
@@ -123,7 +118,7 @@ impl Component for App {
                         <Router<AppRoute>
                             render = { Router::render(move |switch: AppRoute| { match switch {
                                     AppRoute::Dashboard => html!(
-                                        <p>You need to log in!<p/>
+                                        <p>{"You need to log in!"}</p>
                                     ),
                                     _ => html!(<LocationRedirect logout_href="/" />),
                             }})}
