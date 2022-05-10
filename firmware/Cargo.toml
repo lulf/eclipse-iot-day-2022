@@ -38,8 +38,8 @@ opt-level = 0
 overflow-checks = false
 
 [patch.crates-io]
-#drogue-device = { git = "https://github.com/drogue-iot/drogue-device.git", rev = "7fab7189b3ea49dad7237989c270d6ab36e36b27" }
-drogue-device = { path = "/home/lulf/dev/drogue-iot/drogue-device/device" }
+drogue-device = { git = "https://github.com/drogue-iot/drogue-device.git", rev = "bca1c7915f8c24e3974a91a068202868c0c20346" }
+#drogue-device = { path = "/home/lulf/dev/drogue-iot/drogue-device/device" }
 embassy = { git = "https://github.com/embassy-rs/embassy.git", rev = "de7dd59fa9553a1a6b75ff09238c9529277b95e7" }
 embassy-nrf = { git = "https://github.com/embassy-rs/embassy.git", rev = "de7dd59fa9553a1a6b75ff09238c9529277b95e7" }
 embassy-boot = { git = "https://github.com/embassy-rs/embassy.git", rev = "de7dd59fa9553a1a6b75ff09238c9529277b95e7" }
