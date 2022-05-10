@@ -45,7 +45,7 @@ impl Microbit {
                                 match device.connect().await {
                                     Ok(()) => break,
                                     Err(err) => {
-                                        log::error!("Connect error: {}", &err);
+                                        log::info!("Connect error: {}", &err);
                                     }
                                 }
                             }

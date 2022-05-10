@@ -77,7 +77,7 @@ async fn main() -> anyhow::Result<()> {
                 Either::Left((n, _)) => {
                     if let Some(n) = n {
                         merge(&mut view, &n);
-                        println!("{}", view);
+                        println!("'{}'", view);
                     } else {
                         log::info!("Event stream closed, removing device");
                         let _ = adapter.remove_device(address).await;
