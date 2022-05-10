@@ -4,7 +4,7 @@ use futures::future::{select, Either};
 use futures::{pin_mut, StreamExt};
 use serde_json::json;
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 mod board;
 
@@ -49,12 +49,18 @@ async fn main() -> anyhow::Result<()> {
     let address = bluer::Address::from_str(&device)?;
 
     let discover = adapter.discover_devices().await?;
-    tokio::task::spawn(async move {
-        pin_mut!(discover);
-        while let Some(evt) = discover.next().await {
-            log::trace!("Discovery event: {:?}", evt);
+    pin_mut!(discover);
+    while let Some(evt) = discover.next().await {
+        log::trace!("Discovery event: {:?}", evt);
+        match evt {
+            bluer::AdapterEvent::DeviceAdded(a) => {
+                if a == address {
+                    break;
+                }
+            }
+            _ => {}
         }
-    });
+    }
 
     loop {
         let mut board = Microbit::new(&device, adapter.clone());
