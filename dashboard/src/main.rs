@@ -153,15 +153,13 @@ impl App {
             <PageSidebar>
                 <Nav>
                     <NavRouterItem<AppRoute> to={AppRoute::Dashboard}>{"Dashboard"}</NavRouterItem<AppRoute>>
-                    <NavRouterExpandable<AppRoute> title="Manage" expanded=true>
-                        <NavRouterItem<AppRoute> to={AppRoute::Firmware}>{"Firmware"}</NavRouterItem<AppRoute>>
-                    </NavRouterExpandable<AppRoute>>
+                    <NavRouterItem<AppRoute> to={AppRoute::Firmware}>{"Firmware"}</NavRouterItem<AppRoute>>
                 </Nav>
             </PageSidebar>
         };
 
         let logo = html_nested! {
-            <Logo src="https://www.patternfly.org/assets/images/PF-Masthead-Logo.svg" alt="Patternfly Logo" />
+            <Logo src="/logo.svg" alt="Eclipse Virtual IoT and Edge Days 2022" />
         };
 
         html! {
