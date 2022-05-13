@@ -1,20 +1,13 @@
 [package]
-name = "simulated"
+name = "basic"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-libc = { version = "0.2", default-features = false }
+cortex-m = "0.7.3"
+cortex-m-rt = "0.7.0"
+stm32l4 = { version = "0.14.0", features = ["rt", "stm32l4x5"] }
 
-[profile.dev]
-# Must always use panic = "abort" to avoid needing to define the unstable eh_personality lang item.
-panic = "abort"
-
-[profile.release]
-opt-level = "z"     # Optimize for size.
-lto = true          # Enable Link Time Optimization
-codegen-units = 1   # Reduce number of codegen units to increase optimizations.
-panic = "abort"     # Abort on panic
-strip = true        # Automatically strip symbols from the binary.
+defmt = "0.3.0"
+defmt-rtt = "0.3.0"
+panic-probe = { version = "0.3.0", features = ["print-defmt"] }
