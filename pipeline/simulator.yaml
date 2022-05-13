@@ -1,0 +1,28 @@
+﻿apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: simulator-eclipse-iot-build
+  namespace: drogue-ajour
+spec:
+  params:
+    - name: GIT_REPO
+      value: 'https://github.com/lulf/eclipse-iot-day-2022'
+    - name: GIT_REVISION
+      value: main
+    - name: PROJECT_PATH
+      value: simulated
+    - name: IMAGE
+      value: simulator
+  pipelineRef:
+    name: oci-firmware
+  serviceAccountName: pipeline
+  timeout: 1h0m0s
+  workspaces:
+    - name: build
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 10Gi
